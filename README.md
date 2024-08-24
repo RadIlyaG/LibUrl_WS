@@ -12,4 +12,11 @@ _For example:_
 
 In case the RL can't get info from Servers, it performs Connectivity Tests (Ping) to RAD Servers - **webservices03** and **ws-mac-pages** - by `::RLWS::Ping_Services`
 
-#### Meantime the mostly updated and verified file is located at [TDS](\\prod-svm1\tds\install\ate-install\jer_ateTeam\LibUrl_WS)
+#### Meantime the mostly updated and verified file is located at [TDS](\\prod-svm1\tds\install\ate-install\jer_ateTeam\LibUrl_WS)  
+
+## Using
+One of the ways to operate the RL's command and receive it's result is:  
+`foreach {ret ResTxt} [::RLWS::[command]] {}`  
+`if {$ret!=0} {`  
+  `...`  
+`}`  
