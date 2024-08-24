@@ -1741,6 +1741,9 @@ proc Get_Pages {id trId macs_qty} {
 proc Get_TraceId {id} {
   return [::RLWS::Get_TraceId $id]
 }
+proc UpdateDB2 {barcode uut hostDescription date tim status failTestsList failReason operator traceID poNumber data1 data2 data3} {
+  return [::RLWS::UpdateDB2 $barcode $uut $hostDescription $date $tim $status $failTestsList $failReason $operator $traceID $poNumber $data1 $data2 $data3]
+}
 
 if 1 {
 puts "::RLWS::Get_File //prod-svm1/tds/Install/ATEinstall/bwidget1.8/ arrow.tcl c:/temp/arrow.tcl"
@@ -1772,5 +1775,6 @@ puts "MacServer 1"
 puts "Get_Pages IO3001960310 50190576 0"
 puts "Get_TraceId EA1004489579"
 puts "Get_TraceId DA200047522"
-
+foreach {date tim} [split [clock format [clock seconds] -format "%Y.%m.%d %H:%M:%S"] " "] {break}
+puts "UpdateDB2 EA1004489579 UutUut IlyaGinzburg $date $tim Pass FailTestsList FailReason {Ilya Ginzburg} TraceID PoNumber data1 data2 data3"
 
