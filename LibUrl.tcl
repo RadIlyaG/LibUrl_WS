@@ -1741,6 +1741,9 @@ proc Get_Pages {id trId macs_qty} {
 proc Get_TraceId {id} {
   return [::RLWS::Get_TraceId $id]
 }
+proc Get_SwVersions {id} {
+  return [::RLWS::Get_SwVersions $id]
+}
 proc UpdateDB2 {barcode uut hostDescription date tim status failTestsList failReason operator traceID poNumber data1 data2 data3} {
   return [::RLWS::UpdateDB2 $barcode $uut $hostDescription $date $tim $status $failTestsList $failReason $operator $traceID $poNumber $data1 $data2 $data3]
 }
@@ -1777,4 +1780,4 @@ puts "Get_TraceId EA1004489579"
 puts "Get_TraceId DA200047522"
 foreach {date tim} [split [clock format [clock seconds] -format "%Y.%m.%d %H:%M:%S"] " "] {break}
 puts "UpdateDB2 EA1004489579 UutUut IlyaGinzburg $date $tim Pass FailTestsList FailReason {Ilya Ginzburg} TraceID PoNumber data1 data2 data3"
-
+puts "Get_SwVersions DC1002287083"

@@ -29,10 +29,16 @@ In case the RL can't get info from Servers, it performs Connectivity Tests (Ping
 * \::RLWS::MacServer _macs_qty_
 * \::RLWS::UpdateDB2 _barcode uut hostDescription date tim status failTestsList failReason operator traceID poNumber ?data1? ?data2? ?data3?_
 
- color is `#0969DA` fff
-## EXAMPLES
+
+## EXAMPLE
 One of the ways to operate the RL's command and receive it's result is:  
-`foreach {ret ResTxt} [::RLWS::[command]] {}`  
-`if {$ret!=0} {`  
-  `...`  
-`}`
+foreach \{ret resTxt} [\::RLWS::[command]] \{}  
+if {$ret!=0} {    
+  \...  
+\}
+```
+foreach {ret resTxt} [::RLWS::Get_SwVersions DE1005790454] {}  
+if {$ret!=0} {  
+  tk_messageBox -title "Problem" -message $resTxt -type ok
+}
+```
