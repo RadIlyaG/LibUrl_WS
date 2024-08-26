@@ -329,7 +329,7 @@ proc ::RLWS::Disconnect_Barcode {id {mac ""}} {
 #                  0 if there is PcbTraceId Data 
 #   resultText is a list of required parametes/s and its value/s:
 #   ::RLWS::Get_PcbTraceIdData 21181408 {pcb product} will return
-#       0 {pcb SF-1V/PS.REV0.3I product SF1P/PS12V/RG/PS3/TERNA/3PIN/R06}   
+#       0 {SF-1V/PS.REV0.3I SF1P/PS12V/RG/PS3/TERNA/3PIN/R06}   
 # ***************************************************************************
 proc ::RLWS::Get_PcbTraceIdData {id var_list} {
   set procNameArgs [info level 0]
@@ -360,7 +360,7 @@ proc ::RLWS::Get_PcbTraceIdData {id var_list} {
     if {$var_indx=="-1"} {
       return [list -1 "No such parameter: $var"]
     }
-    lappend value $var [lindex $resTxt [expr {1 + $var_indx} ] ]
+    lappend value [lindex $resTxt [expr {1 + $var_indx} ] ]
   }
   #set value [lindex $resTxt [expr {1 + [lsearch $resTxt "po number"]} ] ]
   return [list $res $value] 
