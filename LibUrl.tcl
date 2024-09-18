@@ -335,7 +335,6 @@ proc ::RLWS::Get_PcbTraceIdData {id var_list} {
   set procNameArgs [info level 0]
   set procName [lindex $procNameArgs 0]
   if $::RLWS::debugWS {puts "\n$procNameArgs"}
-  #if $::RLWS::debugWS {puts "\nGet_PcbTraceIdData $id"}
   
   set url "$::RLWS:::HttpsURL/rest/"
   set param PCBTraceabilityIDData\?barcode=null\&traceabilityID=$id
@@ -384,28 +383,28 @@ proc ::RLWS::CheckMac {id mac} {
   set li [::RLWS::_chk_connection_to_mac $mac]
   foreach {res connected_id} $li {}
   if {$res!=0} {
-    return $connected_id
+    return [list $res $connected_id]
   }
   set short_id [format %.11s $id]
   set li [::RLWS::_chk_connection_to_id $short_id]
   foreach {res connected_mac} $li {}
   if {$res!=0} {
-    return $connected_mac
+    return [list $res $connected_mac]
   }
   if $::RLWS::debugWS {puts "CheckMac input_id:<$short_id>, to $mac connected id: <$connected_id>"}
   if $::RLWS::debugWS {puts "CheckMac input_mac:<$mac>, to $short_id connected mac: <$connected_mac>"}
   
   if {$connected_id == $short_id && $connected_mac == $mac} {
-    return [list 0 "$id->$mac"]
+    return [list 0 "$id connected $mac"]
   }
   if {$connected_id == "" && $connected_mac == ""} {
-    return [list 0 "NC, NC"]
+    return [list 0 "$mac & $id aren't connected at all"]
   }
   if {$connected_id != "" && $connected_id != $short_id} {
-    return [list 1 "$mac is already connected to $connected_id"]
+    return [list 1 "$mac already connected to $connected_id"]
   }
   if {$connected_mac != "" && $connected_mac != $mac} {
-    return [list 1 "$id is already connected to $connected_mac"]
+    return [list 1 "$id already connected to $connected_mac"]
   }
   return "-100 None"
 }
@@ -414,6 +413,7 @@ proc ::RLWS::_chk_connection_to_mac {{mac "112233445566"}} {
   set url "$RLWS::MRserverUR/q001_mac_extant_chack"
   set query [::http::formatQuery macID $mac]
   foreach {res connected_id} [::RLWS::_operateWS $url $query "Connection"] {}
+  if {$res!=0} {return [list $res $connected_id]}
   set connected_id [lindex $connected_id [expr 1+ [lsearch $connected_id "id_number"] ] ]
   return [list $res $connected_id]
 }
@@ -422,6 +422,7 @@ proc ::RLWS::_chk_connection_to_id {{id "EA100448957"}} {
   set url "$RLWS::MRserverUR/q003_idnumber_extant_check"
   set query [::http::formatQuery idNumber $id]
   foreach {res connected_mac} [::RLWS::_operateWS $url $query "Connection"] {}
+  if {$res!=0} {return [list $res $connected_id]}
   set connected_mac [lindex $connected_mac [expr 1+ [lsearch $connected_mac "mac"] ] ]
   return [list $res $connected_mac]
 }
@@ -650,7 +651,6 @@ proc ::RLWS::Get_Pages {id {traceId ""} {macs_qty 10} } {
   set procNameArgs [info level 0]
   set procName [lindex $procNameArgs 0]
   if $::RLWS::debugWS {puts "\n$procNameArgs"}
-  #if $::RLWS::debugWS {puts "\nGet_Pages $id $traceId $macs_qty"}
   
   set headers [list "content-type" "text/xml" "SOAPAction" ""]
   set data "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
@@ -763,39 +763,42 @@ proc ::RLWS::Ping_Network {} {
   set result ""
   set Webservices03_indx [lsearch $status "Webservices03"]
   set Webservices03_status [lindex $status [expr {$Webservices03_indx + 1}]]
-  append result "Webservices03: $Webservices03_status\n"
+  append result "Webservices03: $Webservices03_status, "
   
   set WsMacPages_indx [lsearch $status "ws-mac-pages"]
   set WsMacPages_status [lindex $status [expr {$WsMacPages_indx + 1}]]
-  append result "ws-mac-pages: $WsMacPages_status\n"
+  append result "ws-mac-pages: $WsMacPages_status, "
   
   if ![regexp {webservices03 DB Connection ([\sA-Za-z]+) webservices03} $status ma val] {
     return [list -1 "Fail to read Webservices03 DB Connection"]
   } else {
     set Webservices03_DB_status $val
   }
-  append result "webservices03 DB Connection: $Webservices03_DB_status\n"
+  append result "webservices03 DB Connection: $Webservices03_DB_status, "
   
   if ![regexp {webservices03 Agile Connection ([\sA-Za-z]+) ws-mac-pages} $status ma val] {
     return [list -1 "Fail to read Webservices03 Agile Connection"]
   } else {
     set Webservices03_Agile_status $val
   }
-  append result "webservices03 Agile Connection: $Webservices03_Agile_status\n"
+  append result "webservices03 Agile Connection: $Webservices03_Agile_status, "
   
   if ![regexp {ws-mac-pages DB Connection ([\sA-Za-z]+) ws-mac-pages} $status ma val] {
     return [list -1 "Fail to read WsMacPages DB Connection"]
   } else {
     set WsMacPages_DB_status $val
   }
-  append result "ws-mac-pages DB Connection: $WsMacPages_DB_status\n"
+  append result "ws-mac-pages DB Connection: $WsMacPages_DB_status, "
   
   if ![regexp {ws-mac-pages Agile Connection ([\sA-Za-z]+)} $status ma val] {
     return [list -1 "Fail to read  WsMacPages Agile Connection"]
   } else {
     set  WsMacPages_Agile_status $val
   }
-  append result "ws-mac-pages Agile Connection: $WsMacPages_DB_status\n"
+  append result "ws-mac-pages Agile Connection: $WsMacPages_DB_status, "
+  
+  set result [string trimright $result]
+  set result [string trimright $result ,]
   
   if {[regexp -all {OkK} $resTxt]==6} {
     return [list 0 "Server OK"]
@@ -826,14 +829,18 @@ proc ::RLWS::Ping_Services {} {
       foreach {ret resTxt} [::RLWS::_pingToService $srv $db] {
         if $::RLWS::debugWS {puts "srv:<$srv> db:<$db> ret:<$ret> <$resTxt>"}
         incr res $ret
-        append result $resTxt\n
+        append result "${resTxt}, "
       }
     }
   }  
+  set result [string trimright $result]
+  set result [string trimright $result ,]
   if {$res==0} {
     return [list 0 "Server OK"]
   } else {
-    return [list -1 [list "Server problem" $result]]
+    set rslt "Server problem. "
+    append rslt $result
+    return [list -1 $rslt]
   }  
 }
 # ***************************************************************************
@@ -933,7 +940,8 @@ proc ::RLWS::_eval_ping_srv_db {cmd server db} {
   
   set title "$server"
   if {$db!=""} {
-    append title " to $db Connection"
+    #  append title " to $db Connection"
+    append title " to $db"
   }
   if [string match {*OK*} $body] {
     return [list 0 "$title: OK"]
